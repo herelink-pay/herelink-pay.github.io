@@ -41,12 +41,15 @@
             .content-auto {
                 content-visibility: auto;
             }
+
             .payment-card-active {
                 @apply border-primary bg-primary/5;
             }
+
             .amount-btn-active {
                 @apply bg-primary text-white border-primary;
             }
+
             .btn-gradient {
                 @apply bg-gradient-to-r from-primary to-primary/80;
             }
@@ -73,13 +76,16 @@
         <h2 class="text-gray-600 font-medium mb-4">选择支付金额</h2>
         <!-- 固定金额按钮组 -->
         <div class="grid grid-cols-3 gap-3 mb-4">
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary amount-btn-active" data-amount="50">
+            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary amount-btn-active"
+                    data-amount="50">
                 ¥50
             </button>
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary" data-amount="100">
+            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
+                    data-amount="100">
                 ¥100
             </button>
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary" data-amount="200">
+            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
+                    data-amount="200">
                 ¥200
             </button>
         </div>
@@ -155,7 +161,8 @@
             <span class="text-gray-400 mr-2">应付总额：</span>
             <span class="text-2xl font-bold text-danger" id="totalAmount">¥50.00</span>
         </div>
-        <button class="btn-gradient text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0" id="payBtn">
+        <button class="btn-gradient text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                id="payBtn">
             立即支付
         </button>
     </div>
@@ -169,9 +176,19 @@
         </div>
         <h3 class="text-xl font-bold text-gray-600 mb-2">支付成功</h3>
         <p class="text-gray-400 mb-6">¥<span id="successAmount">50.00</span> 已成功到账，可前往账户查询</p>
-        <button id="closeModal" class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all">
+        <button id="closeModal"
+                class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all">
             完成
         </button>
+    </div>
+</div>
+
+<div id="payingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
+        <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center text-success mx-auto mb-4">
+            <i class="fa fa-check text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-600 mb-2">正在跳转支付宝</h3>
     </div>
 </div>
 
@@ -236,6 +253,7 @@
     // 支付按钮点击事件（模拟支付成功）
     const payBtn = document.getElementById('payBtn');
     const successModal = document.getElementById('successModal');
+    const payingModal = document.getElementById('payingModal');
     const closeModal = document.getElementById('closeModal');
 
     payBtn.addEventListener('click', () => {
@@ -249,12 +267,61 @@
         payBtn.disabled = true;
         payBtn.textContent = '支付中...';
 
-        setTimeout(() => {
-            successModal.classList.remove('hidden');
+        fetch("https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({"totalAmount": "0.01"})
+        }).then(async res => {
+            if (res.ok && res.status === 200) {
+                const json = await res.json();
+                if (json.errorCode === 0) {
+                    payingModal.classList.remove('hidden');
+                    console.log(json.data)
+                    submitAlipayForm(json.data)
+                }
+            } else {
+                alert('发起支付失败');
+            }
             payBtn.disabled = false;
             payBtn.textContent = '立即支付';
-        }, 1500);
+        }).catch(err => {
+            alert('发起支付失败' + err);
+            payBtn.disabled = false;
+            payBtn.textContent = '立即支付';
+        })
     });
+
+    // 拉起支付宝
+    function submitAlipayForm(formStr) {
+        // 创建临时容器
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formStr;
+
+        // 提取form属性及内部input
+        const form = document.createElement('form');
+        form.action = tempDiv.querySelector('form').action;
+        form.method = tempDiv.querySelector('form').method || 'POST';
+        form.style.display = 'none';
+
+        // 复制所有input字段
+        const inputs = tempDiv.querySelectorAll('input');
+        inputs.forEach(input => {
+            const newInput = document.createElement('input');
+            newInput.type = 'hidden';
+            newInput.name = input.name;
+            newInput.value = input.value;
+            form.appendChild(newInput);
+        });
+
+        // 添加到当前页面并提交
+        document.body.appendChild(form);
+        form.submit();
+
+        // 清理临时元素
+        document.body.removeChild(form);
+    }
 
     // 关闭弹窗
     closeModal.addEventListener('click', () => {
