@@ -289,7 +289,7 @@
             document.getElementById('loadingTitle').textContent = '正在查询账户信息';
             document.getElementById('loadingContent').textContent = '请稍候...';
             document.getElementById('loadingContent').className = 'text-gray-400 mb-6';
-            document.getElementById('closeLoadingModal').classList.add('hidden');
+            // document.getElementById('closeLoadingModal').classList.add('hidden');
         } else {
             modal.classList.add('hidden');
         }
@@ -305,7 +305,7 @@
         document.getElementById('loadingContent').textContent = errorMsg;
         document.getElementById('loadingContent').className = 'text-danger mb-6';
         // 显示关闭按钮
-        document.getElementById('closeLoadingModal').classList.remove('hidden');
+        // document.getElementById('closeLoadingModal').classList.remove('hidden');
     };
 
     // 调用获取账户信息的接口
