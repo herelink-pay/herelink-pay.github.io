@@ -192,7 +192,19 @@
     </div>
 </div>
 
+<div id="loadingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
+        <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center text-success mx-auto mb-4">
+            <i class="fa fa-load text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-600 mb-2">正在查询订单信息</h3>
+    </div>
+</div>
+
 <script>
+
+    console.log("init page")
+
     // 初始化当前时间（替换固定创建时间）
     const initCreateTime = () => {
         const now = new Date();
@@ -283,6 +295,8 @@
                     payingModal.classList.remove('hidden');
                     console.log(json.data)
                     submitAlipayForm(json.data)
+                } else {
+                    alert('发起支付失败:', json.message);
                 }
             } else {
                 alert('发起支付失败');
