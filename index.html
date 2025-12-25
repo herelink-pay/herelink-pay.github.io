@@ -275,6 +275,9 @@
             return;
         }
 
+        // 签名获取
+        const sign = getUrlParams("sign");
+
         // 模拟支付请求延迟
         payBtn.disabled = true;
         payBtn.textContent = '支付中...';
@@ -285,6 +288,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                "sign": sign,
                 "totalAmount": selectedAmount,
                 "quitUrl": "https://pay.here.link/"
             })
@@ -293,10 +297,9 @@
                 const json = await res.json();
                 if (json.errorCode === 0) {
                     payingModal.classList.remove('hidden');
-                    console.log(json.data)
                     submitAlipayForm(json.data)
                 } else {
-                    alert('发起支付失败:', json.message);
+                    alert('发起支付失败:' + json.message);
                 }
             } else {
                 alert('发起支付失败');
@@ -338,6 +341,19 @@
 
         // 清理临时元素
         document.body.removeChild(form);
+    }
+
+    function getUrlParams(paramKey) {
+        const searchParams = window.location.search.slice(1);
+        if (!searchParams) return paramKey ? null : {};
+
+        const params = {};
+        searchParams.split('&').forEach(item => {
+            const [key, value = ''] = item.split('=');
+            params[decodeURIComponent(key)] = decodeURIComponent(value);
+        });
+
+        return paramKey ? params[paramKey] || null : params;
     }
 
     // 关闭弹窗
