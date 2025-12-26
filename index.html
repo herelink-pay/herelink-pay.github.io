@@ -327,8 +327,8 @@
                 const result = await response.json();
                 if (result.errorCode === 0 && result.data) {
                     if (result.data.orderToken) {
-                        this.window.herf = `/done?token=${encodeURIComponent(result.data.orderToken)}`
-                        return;
+                        self.location.href = `/done?a=1&token=${encodeURIComponent(result.data.orderToken)}`
+                        // return;
                     }
                     // 存储账户信息
                     accountInfo.accountsId = result.data.accountsId || '';
