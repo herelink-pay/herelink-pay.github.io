@@ -169,7 +169,7 @@
     <div class="text-xs text-gray-400 mb-16">
         <p>• 支付超时将自动取消订单，请在5分钟内完成支付</p>
         <p>• 支付成功后金额实时到账，可在"我的账户"中查询</p>
-        <p>• 如有疑问，请联系客服：xxxxxxxxxx</p>
+        <p>• 如有疑问，请联系客服：400-110-2888</p>
     </div>
 </main>
 
@@ -177,7 +177,7 @@
 <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] py-4 px-6">
     <div class="container mx-auto flex items-center justify-between">
         <div class="flex items-baseline">
-            <span class="text-2xl font-bold text-danger" id="totalAmount">¥50.00</span>
+            <span class="text-2xl font-bold text-danger" id="totalAmount"></span>
         </div>
         <button class="btn-gradient text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                 id="payBtn">
@@ -185,21 +185,6 @@
         </button>
     </div>
 </footer>
-
-<!-- 支付成功弹窗 -->
-<div id="successModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
-        <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center text-success mx-auto mb-4">
-            <i class="fa fa-check text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-bold text-gray-600 mb-2">支付成功</h3>
-        <p class="text-gray-400 mb-6">¥<span id="successAmount">50.00</span> 已成功到账，可前往账户查询</p>
-        <button id="closeModal"
-                class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all">
-            完成
-        </button>
-    </div>
-</div>
 
 <div id="payingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
@@ -327,8 +312,8 @@
                 const result = await response.json();
                 if (result.errorCode === 0 && result.data) {
                     if (result.data.orderToken) {
-                        self.location.href = `/done?a=1&token=${encodeURIComponent(result.data.orderToken)}`
-                        // return;
+                        self.location.href = `/done?token=${encodeURIComponent(result.data.orderToken)}`
+                        return;
                     }
                     // 存储账户信息
                     accountInfo.accountsId = result.data.accountsId || '';
@@ -415,9 +400,7 @@
 
     // 支付按钮点击事件
     const payBtn = document.getElementById('payBtn');
-    const successModal = document.getElementById('successModal');
     const payingModal = document.getElementById('payingModal');
-    const closeModal = document.getElementById('closeModal');
 
     payBtn.addEventListener('click', () => {
         if (selectedAmount <= 0) {
@@ -504,11 +487,6 @@
 
         return paramKey ? params[paramKey] || null : params;
     }
-
-    // 关闭支付成功弹窗
-    closeModal.addEventListener('click', () => {
-        successModal.classList.add('hidden');
-    });
 
     // 关闭加载/错误弹窗
     document.getElementById('closeLoadingModal').addEventListener('click', () => {
