@@ -245,7 +245,7 @@
                 return;
             }
 
-            const apiUrl = `https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay/getOrderInfo?token=${encodeURIComponent(token)}`;
+            const apiUrl = `https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay/getOrderInfo?token=${decodeURIComponent(token)}`;
 
             // 发起POST请求
             const response = await fetch(apiUrl, {
