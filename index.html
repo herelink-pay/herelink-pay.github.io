@@ -301,7 +301,7 @@
 
         try {
             const sign = getUrlParams('sign') || '';
-            const apiUrl = `https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay/getAccountInfo?token=${decodeURIComponent(sign)}`;
+            const apiUrl = `https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay/getAccountInfo?token=${encodeURIComponent(sign)}`;
 
             // 发起POST请求
             const response = await fetch(apiUrl, {
@@ -425,7 +425,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                "sign": decodeURIComponent(sign),
+                "sign": sign,
                 "totalAmount": selectedAmount,
                 "quitUrl": "https://pay.here.link/"
             })
