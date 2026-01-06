@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>确认支付 - 安全支付中心</title>
-    <!-- Tailwind CSS 官方最新稳定版 CDN -->
-    <script src="static/js/tailwindcss.3.4.17.min.js"></script>
     <!-- Font Awesome 图标库 -->
     <link rel="stylesheet" href="static/css/all.min.css">
+    <link rel="stylesheet" href="./static/tailwindcss/styles.min.css">
 
     <!-- 自定义配置 -->
     <script>
@@ -35,36 +34,6 @@
             }
         }
     </script>
-
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-
-            .payment-card-active {
-                @apply border-primary bg-primary/5;
-            }
-
-            .amount-btn-active {
-                @apply bg-primary text-white border-primary;
-            }
-
-            .btn-gradient {
-                @apply bg-gradient-to-r from-primary to-primary/80;
-            }
-
-            /* 倒计时数字高亮样式 */
-            .countdown-highlight {
-                @apply font-bold text-primary px-1;
-            }
-
-            /* 过期提示高亮样式 */
-            .expired-highlight {
-                @apply font-bold text-danger px-1;
-            }
-        }
-    </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-600 min-h-screen flex flex-col">
 <!-- 顶部导航栏 -->
@@ -81,15 +50,15 @@
         <h2 class="text-gray-600 font-medium mb-4">选择支付金额</h2>
         <!-- 固定金额按钮组 -->
         <div class="grid grid-cols-3 gap-3 mb-4">
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary amount-btn-active"
+            <button class="h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary bg-primary/5 border-primary"
                     data-amount="50">
                 ¥50
             </button>
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
+            <button class="h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
                     data-amount="100">
                 ¥100
             </button>
-            <button class="amount-btn h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
+            <button class="h-16 border border-gray-200 rounded-lg flex items-center justify-center font-medium transition-all hover:border-primary"
                     data-amount="200">
                 ¥200
             </button>
@@ -113,7 +82,7 @@
         <h2 class="text-gray-600 font-medium mb-4">选择支付方式</h2>
         <div class="space-y-3">
             <!-- 支付宝支付 -->
-            <label class="payment-card group flex items-center justify-between p-4 border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-primary/50 payment-card-active">
+            <label class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-primary/50 border-primary bg-primary/5">
                 <div class="flex items-center">
                     <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white mr-4">
                         <i class="fa-brands fa-alipay text-xl"></i>
@@ -174,7 +143,7 @@
         <div class="flex items-baseline">
             <span class="text-2xl font-bold text-danger" id="totalAmount"></span>
         </div>
-        <button class="btn-gradient text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+        <button class="bg-gradient-to-r from-primary to-primary/80 bg-primary text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                 id="payBtn">
             立即支付
         </button>
@@ -235,7 +204,7 @@
         const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
         const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-        return `<span class="countdown-highlight">${h}</span>:<span class="countdown-highlight">${m}</span>:<span class="countdown-highlight">${s}</span>`;
+        return `<span class="font-bold text-primary px-1">${h}</span>:<span class="font-bold text-primary px-1">${m}</span>:<span class="font-bold text-primary px-1">${s}</span>`;
     };
 
     // 更新倒计时显示
@@ -246,7 +215,7 @@
 
         if (remaining <= 0) {
             // 已过期
-            expireText.innerHTML = `会话已<span class="expired-highlight">过期</span>，无法进行支付`;
+            expireText.innerHTML = `会话已<span class="font-bold text-danger px-1">过期</span>，无法进行支付`;
             // 禁用支付按钮
             document.getElementById('payBtn').disabled = true;
             document.getElementById('payBtn').classList.add('opacity-50');
@@ -359,7 +328,7 @@
     };
 
     // 金额选择逻辑
-    const amountBtns = document.querySelectorAll('.amount-btn');
+    const amountBtns = document.querySelectorAll('.h-16.border-gray-200.rounded-lg');
     const customAmountInput = document.getElementById('customAmount');
     const totalAmountEl = document.getElementById('totalAmount');
     const successAmountEl = document.getElementById('successAmount');
@@ -368,11 +337,18 @@
     // 固定金额按钮点击
     amountBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            amountBtns.forEach(b => b.classList.remove('amount-btn-active'));
-            btn.classList.add('amount-btn-active');
+            amountBtns.forEach(b => {
+                b.classList.remove('bg-primary/5', 'border-primary');
+                b.classList.add('border-gray-200');
+            });
+            btn.classList.remove('border-gray-200');
+            btn.classList.add('bg-primary/5', 'border-primary');
+
             selectedAmount = Number(btn.dataset.amount);
             totalAmountEl.textContent = `¥${selectedAmount.toFixed(2)}`;
-            successAmountEl.textContent = selectedAmount.toFixed(2);
+            if (successAmountEl) {
+                successAmountEl.textContent = selectedAmount.toFixed(2);
+            }
             customAmountInput.value = '';
         });
     });
@@ -383,13 +359,21 @@
         if (!isNaN(value) && value > 0) {
             selectedAmount = value;
             totalAmountEl.textContent = `¥${selectedAmount.toFixed(2)}`;
-            successAmountEl.textContent = selectedAmount.toFixed(2);
-            amountBtns.forEach(btn => btn.classList.remove('amount-btn-active'));
+            if (successAmountEl) {
+                successAmountEl.textContent = selectedAmount.toFixed(2);
+            }
+            amountBtns.forEach(btn => {
+                btn.classList.remove('bg-primary/5', 'border-primary');
+                btn.classList.add('border-gray-200');
+            });
         } else if (e.target.value === '') {
             selectedAmount = 50;
-            amountBtns[0].classList.add('amount-btn-active');
+            amountBtns[0].classList.remove('border-gray-200');
+            amountBtns[0].classList.add('bg-primary/5', 'border-primary');
             totalAmountEl.textContent = `¥${selectedAmount.toFixed(2)}`;
-            successAmountEl.textContent = selectedAmount.toFixed(2);
+            if (successAmountEl) {
+                successAmountEl.textContent = selectedAmount.toFixed(2);
+            }
         }
     });
 

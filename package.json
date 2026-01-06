@@ -1,0 +1,27 @@
+{
+  "name": "herelink-pay",
+  "version": "1.0.0",
+  "description": "海联门锁支付",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "npx postcss styles.css -o ./src/static/tailwindcss/styles.min.css --config ./postcss.config.js --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/herelink-pay/herelink-pay.github.io.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/herelink-pay/herelink-pay.github.io/issues"
+  },
+  "homepage": "https://github.com/herelink-pay/herelink-pay.github.io#readme",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "postcss-cli": "^11.0.1"
+  }
+}
