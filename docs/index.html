@@ -67,7 +67,7 @@
             </div>
             <div class="flex justify-between pb-3 border-b border-gray-100">
                 <span class="text-gray-400">支付类型</span>
-                <span class="text-gray-600">余额充值</span>
+                <span class="text-gray-600" id="orderTypeText">-</span>
             </div>
             <div class="flex justify-between pb-3 border-b border-gray-100">
                 <span class="text-gray-400">支付方式</span>
@@ -138,6 +138,7 @@
         token: '',
         payId: null,
         orderId: null,
+        orderType: null,
         amount: 0,
         currency: 'CNY',
         status: null,
@@ -157,6 +158,16 @@
     function formatAmount(amount) {
         const value = Number(amount || 0);
         return `¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function getOrderTypeDesc(orderType) {
+        if (orderType === 1) {
+            return '余额充值';
+        }
+        if (orderType === 3) {
+            return '分润支付';
+        }
+        return '订单支付';
     }
 
     function updateStatusView(status, statusDesc) {
@@ -226,11 +237,12 @@
     function renderPageInfo(data) {
         state.payId = data.payId;
         state.orderId = data.orderId;
+        state.orderType = data.orderType;
         state.amount = data.amount || 0;
         state.currency = data.currency || 'CNY';
         state.status = data.status;
         state.statusDesc = data.statusDesc || '';
-        state.subject = data.subject || '余额充值';
+        state.subject = data.subject || '支付订单';
         state.expiredTime = data.expiredTime;
         state.paySuccess = !!data.paySuccess;
         state.doneToken = data.doneToken || state.token;
@@ -238,6 +250,7 @@
         document.getElementById('payId').textContent = state.payId || '-';
         document.getElementById('orderId').textContent = state.orderId || '-';
         document.getElementById('currency').textContent = state.currency;
+        document.getElementById('orderTypeText').textContent = getOrderTypeDesc(state.orderType);
         document.getElementById('subjectText').textContent = state.subject;
         document.getElementById('totalAmount').textContent = formatAmount(state.amount);
         document.getElementById('footerAmount').textContent = formatAmount(state.amount);
@@ -251,11 +264,7 @@
         }
 
         const payBtn = document.getElementById('payBtn');
-        if (state.paySuccess) {
-            window.location.href = `/done?token=${encodeURIComponent(state.doneToken)}`;
-            return;
-        }
-        if (state.status === 2) {
+        if (state.paySuccess || state.status === 2) {
             window.location.href = `/done?token=${encodeURIComponent(state.doneToken)}`;
             return;
         }
