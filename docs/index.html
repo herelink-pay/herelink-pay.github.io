@@ -235,6 +235,7 @@
     }
 
     function renderPageInfo(data) {
+        console.log("data.doneToken", doneToken)
         state.payId = data.payId;
         state.orderId = data.orderId;
         state.orderType = data.orderType;
@@ -265,6 +266,7 @@
 
         const payBtn = document.getElementById('payBtn');
         if (state.paySuccess || state.status === 2) {
+            console.log("state.doneToken", state.doneToken)
             window.location.href = `/done?token=${encodeURIComponent(state.doneToken)}`;
             return;
         }
