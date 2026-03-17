@@ -235,8 +235,6 @@
     }
 
     function renderPageInfo(data) {
-        debugger
-        console.log("data.doneToken", data.doneToken)
         state.payId = data.payId;
         state.orderId = data.orderId;
         state.orderType = data.orderType;
@@ -267,9 +265,7 @@
 
         const payBtn = document.getElementById('payBtn');
         if (state.paySuccess || state.status === 2) {
-            console.log("state.doneToken", state.doneToken)
-            console.log("encodeURIComponent state.doneToken", encodeURIComponent(state.doneToken));
-            // window.location.href = `/done?token=${encodeURIComponent(state.doneToken)}`;
+            window.location.href = `/done?token=${state.doneToken}`;
             return;
         }
         payBtn.disabled = false;
