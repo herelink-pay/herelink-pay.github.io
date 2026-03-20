@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>确认支付 - 安全支付中心</title>
-    <link rel="stylesheet" href="static/css/all.min.css">
-    <link rel="stylesheet" href="./static/tailwindcss/styles.min.css">
+    <link rel="stylesheet" href="/static/css/all.min.css">
+    <link rel="stylesheet" href="/static/tailwindcss/styles.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -151,6 +151,11 @@
     };
 
     function getUrlParam(key) {
+        const path = window.location.pathname || '';
+        const pathMatch = path.match(/^\/pay\/([^/?#]+)$/);
+        if (key === 'token' && pathMatch && pathMatch[1]) {
+            return decodeURIComponent(pathMatch[1]);
+        }
         const params = new URLSearchParams(window.location.search);
         return params.get(key);
     }
@@ -164,7 +169,7 @@
         if (orderType === 1) {
             return '余额充值';
         }
-        if (orderType === 3) {
+        if (orderType === 3 || orderType === 4) {
             return '分润支付';
         }
         return '订单支付';
@@ -265,7 +270,7 @@
 
         const payBtn = document.getElementById('payBtn');
         if (state.paySuccess || state.status === 2) {
-            window.location.href = `/done?token=${state.doneToken}`;
+            window.location.href = `/done/${encodeURIComponent(state.doneToken)}`;
             return;
         }
         payBtn.disabled = false;
@@ -313,7 +318,7 @@
             }
             const data = result.data;
             if (data.paid) {
-                window.location.href = `/done?token=${encodeURIComponent(data.doneToken || state.token)}`;
+                window.location.href = `/done/${encodeURIComponent(data.doneToken || state.token)}`;
                 return;
             }
             if (!data.formHtml) {
