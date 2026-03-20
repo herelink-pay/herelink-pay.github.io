@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>支付完成 - 安全支付中心</title>
-    <link rel="stylesheet" href="/static/css/all.min.css">
-    <link rel="stylesheet" href="/static/tailwindcss/styles.min.css">
+    <link rel="stylesheet" href="../static/css/all.min.css">
+    <link rel="stylesheet" href="../static/tailwindcss/styles.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -96,11 +96,6 @@
     const API_BASE = 'https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay';
 
     function getUrlParam(key) {
-        const path = window.location.pathname || '';
-        const pathMatch = path.match(/^\/done\/([^/?#]+)$/);
-        if (key === 'token' && pathMatch && pathMatch[1]) {
-            return decodeURIComponent(pathMatch[1]);
-        }
         const params = new URLSearchParams(window.location.search);
         return params.get(key);
     }
