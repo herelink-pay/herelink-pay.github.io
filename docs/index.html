@@ -307,6 +307,7 @@
                 })
             });
             const result = await response.json();
+            console.log("result", result);
             if (!response.ok || result.errorCode !== 0 || !result.data) {
                 alert(result.message || '发起支付失败');
                 return;
