@@ -265,7 +265,7 @@
 
         const payBtn = document.getElementById('payBtn');
         if (state.paySuccess || state.status === 2) {
-            window.location.href = `/done?token=${state.doneToken}`;
+            window.location.href = `/done/?token=${state.doneToken}`;
             return;
         }
         payBtn.disabled = false;
