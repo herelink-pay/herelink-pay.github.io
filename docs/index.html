@@ -314,7 +314,7 @@
             }
             const data = result.data;
             if (data.paid) {
-                window.location.href = `/done?token=${encodeURIComponent(data.doneToken || state.token)}`;
+                window.location.href = `/done/?token=${encodeURIComponent(data.doneToken || state.token)}`;
                 return;
             }
             if (!data.formHtml) {
