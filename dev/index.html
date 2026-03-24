@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认支付 - 安全支付中心</title>
+    <link rel="stylesheet" href="static/css/all.min.css">
+    <link rel="stylesheet" href="./static/tailwindcss/styles.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        gray: {
+                            100: '#F7F8FA',
+                            200: '#E5E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-600 min-h-screen flex flex-col">
+<header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-center">
+        <h1 class="text-lg font-semibold text-gray-600">确认支付</h1>
+    </div>
+</header>
+
+<main class="flex-1 container mx-auto px-4 py-6">
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex items-start justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-gray-600 font-medium text-lg mb-2">支付信息</h2>
+                <p class="text-sm text-gray-400" id="subjectText">正在加载支付信息</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500" id="statusBadge">加载中</span>
+        </div>
+
+        <div id="expireNotice" class="mb-6 p-3 bg-gradient-to-r from-warning/10 to-primary/5 border border-warning/20 rounded-lg hidden">
+            <div class="flex items-center">
+                <i class="fa fa-clock-o text-warning mr-2"></i>
+                <span id="expireText" class="text-gray-600 text-sm"></span>
+            </div>
+        </div>
+
+        <div class="space-y-4 text-sm">
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">支付单号</span>
+                <span class="text-gray-600 font-medium" id="payId">-</span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">订单号</span>
+                <span class="text-gray-600 font-medium" id="orderId">-</span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">支付类型</span>
+                <span class="text-gray-600" id="orderTypeText">-</span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">支付方式</span>
+                <span class="text-gray-600 flex items-center">
+                    <i class="fa-brands fa-alipay text-blue-500 mr-2"></i>
+                    支付宝支付
+                </span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">币种</span>
+                <span class="text-gray-600" id="currency">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-gray-400 text-sm">应付金额</span>
+            <span class="text-gray-400 text-sm" id="statusText">正在加载</span>
+        </div>
+        <div class="text-3xl font-bold text-danger" id="totalAmount">¥0.00</div>
+    </div>
+
+    <div class="text-xs text-gray-400 mb-16 space-y-1">
+        <p>• 金额由业务订单预先生成，支付页不支持修改金额</p>
+        <p>• 支付是否成功以支付宝异步回调为准</p>
+        <p>• 如果重复打开支付链接，系统会自动判断当前支付状态</p>
+    </div>
+</main>
+
+<footer class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] py-4 px-6">
+    <div class="container mx-auto flex items-center justify-between">
+        <div class="flex items-baseline">
+            <span class="text-2xl font-bold text-danger" id="footerAmount">¥0.00</span>
+        </div>
+        <button class="bg-gradient-to-r from-primary to-primary/80 bg-primary text-white font-medium py-3 px-12 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                id="payBtn"
+                disabled>
+            支付宝支付
+        </button>
+    </div>
+</footer>
+
+<div id="payingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
+        <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center text-success mx-auto mb-4">
+            <i class="fa fa-check text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-600 mb-2">正在跳转支付宝</h3>
+        <p class="text-gray-400 text-sm">请在支付宝中完成支付</p>
+    </div>
+</div>
+
+<div id="loadingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-8 max-w-[80%] w-[300px] text-center">
+        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4" id="loadingIcon">
+            <i class="fa fa-spinner fa-spin text-primary text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-600 mb-2" id="loadingTitle">正在加载支付信息</h3>
+        <p class="text-gray-400 mb-6" id="loadingContent">请稍候...</p>
+        <button id="closeLoadingModal" class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all hidden">确认</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay';
+    const quitUrl = 'https://pay.here.link/dev/';
+    const state = {
+        token: '',
+        payId: null,
+        orderId: null,
+        orderType: null,
+        amount: 0,
+        currency: 'CNY',
+        status: null,
+        statusDesc: '',
+        subject: '',
+        expiredTime: null,
+        paySuccess: false,
+        doneToken: '',
+        countdownTimer: null
+    };
+
+    function getUrlParam(key) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(key);
+    }
+
+    function formatAmount(amount) {
+        const value = Number(amount || 0);
+        return `¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function getOrderTypeDesc(orderType) {
+        if (orderType === 1) {
+            return '余额充值';
+        }
+        if (orderType === 3) {
+            return '分润支付';
+        }
+        return '订单支付';
+    }
+
+    function updateStatusView(status, statusDesc) {
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        statusBadge.className = 'px-3 py-1 rounded-full text-xs font-medium';
+        statusText.textContent = statusDesc || '未知状态';
+        if (status === 2) {
+            statusBadge.classList.add('bg-success/10', 'text-success');
+        } else if (status === 1) {
+            statusBadge.classList.add('bg-warning/10', 'text-warning');
+        } else if (status === 3 || status === 4) {
+            statusBadge.classList.add('bg-danger/10', 'text-danger');
+        } else {
+            statusBadge.classList.add('bg-gray-100', 'text-gray-500');
+        }
+        statusBadge.textContent = statusDesc || '未知状态';
+    }
+
+    function toggleLoadingModal(show) {
+        const modal = document.getElementById('loadingModal');
+        if (show) {
+            modal.classList.remove('hidden');
+            document.getElementById('loadingIcon').innerHTML = '<i class="fa fa-spinner fa-spin text-primary text-2xl"></i>';
+            document.getElementById('loadingIcon').className = 'w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4';
+            document.getElementById('loadingTitle').textContent = '正在加载支付信息';
+            document.getElementById('loadingContent').textContent = '请稍候...';
+            document.getElementById('loadingContent').className = 'text-gray-400 mb-6';
+            document.getElementById('closeLoadingModal').classList.add('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function showErrorInModal(title, message) {
+        document.getElementById('loadingIcon').innerHTML = '<i class="fa fa-exclamation-circle text-danger text-2xl"></i>';
+        document.getElementById('loadingIcon').className = 'w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center mx-auto mb-4';
+        document.getElementById('loadingTitle').textContent = title || '加载失败';
+        document.getElementById('loadingContent').textContent = message || '未知错误';
+        document.getElementById('loadingContent').className = 'text-danger mb-6';
+        document.getElementById('closeLoadingModal').classList.remove('hidden');
+    }
+
+    function updateExpireNotice() {
+        const expireNotice = document.getElementById('expireNotice');
+        const expireText = document.getElementById('expireText');
+        const payBtn = document.getElementById('payBtn');
+        if (!state.expiredTime) {
+            expireNotice.classList.add('hidden');
+            return;
+        }
+        expireNotice.classList.remove('hidden');
+        const remaining = Math.floor((state.expiredTime - Date.now()) / 1000);
+        if (remaining <= 0) {
+            expireText.innerHTML = '支付链接已<span class="font-bold text-danger px-1">过期</span>，无法继续发起支付';
+            payBtn.disabled = true;
+            payBtn.textContent = '支付链接已过期';
+            clearInterval(state.countdownTimer);
+            return;
+        }
+        const h = String(Math.floor(remaining / 3600)).padStart(2, '0');
+        const m = String(Math.floor((remaining % 3600) / 60)).padStart(2, '0');
+        const s = String(remaining % 60).padStart(2, '0');
+        expireText.innerHTML = `支付链接剩余有效期：<span class="font-bold text-primary px-1">${h}</span>:<span class="font-bold text-primary px-1">${m}</span>:<span class="font-bold text-primary px-1">${s}</span>`;
+    }
+
+    function renderPageInfo(data) {
+        state.payId = data.payId;
+        state.orderId = data.orderId;
+        state.orderType = data.orderType;
+        state.amount = data.amount || 0;
+        state.currency = data.currency || 'CNY';
+        state.status = data.status;
+        state.statusDesc = data.statusDesc || '';
+        state.subject = data.subject || '支付订单';
+        state.expiredTime = data.expiredTime;
+        state.paySuccess = !!data.paySuccess;
+        state.doneToken = data.doneToken || state.token;
+
+        document.getElementById('payId').textContent = state.payId || '-';
+        document.getElementById('orderId').textContent = state.orderId || '-';
+        document.getElementById('currency').textContent = state.currency;
+        document.getElementById('orderTypeText').textContent = getOrderTypeDesc(state.orderType);
+        document.getElementById('subjectText').textContent = state.subject;
+        document.getElementById('totalAmount').textContent = formatAmount(state.amount);
+        document.getElementById('footerAmount').textContent = formatAmount(state.amount);
+        updateStatusView(state.status, state.statusDesc);
+        updateExpireNotice();
+        if (state.countdownTimer) {
+            clearInterval(state.countdownTimer);
+        }
+        if (state.expiredTime) {
+            state.countdownTimer = setInterval(updateExpireNotice, 1000);
+        }
+
+        const payBtn = document.getElementById('payBtn');
+        if (state.paySuccess || state.status === 2) {
+            window.location.href = `./done/?token=${state.doneToken}`;
+            return;
+        }
+        payBtn.disabled = false;
+        payBtn.textContent = state.status === 3 ? '重新发起支付' : '支付宝支付';
+    }
+
+    async function fetchPayPageInfo() {
+        toggleLoadingModal(true);
+        try {
+            const response = await fetch(`${API_BASE}/payPageInfo`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: state.token })
+            });
+            const result = await response.json();
+            if (!response.ok || result.errorCode !== 0 || !result.data) {
+                showErrorInModal('查询失败', result.message || `接口请求失败：${response.status}`);
+                return;
+            }
+            renderPageInfo(result.data);
+            setTimeout(() => toggleLoadingModal(false), 300);
+        } catch (error) {
+            console.error('fetchPayPageInfo error', error);
+            showErrorInModal('查询失败', '网络异常，无法连接到服务器，请检查网络后重试');
+        }
+    }
+
+    async function startAlipayPay() {
+        const payBtn = document.getElementById('payBtn');
+        payBtn.disabled = true;
+        payBtn.textContent = '支付中...';
+        try {
+            const response = await fetch(`${API_BASE}/alipayPay`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: state.token,
+                    quitUrl: quitUrl
+                })
+            });
+            const result = await response.json();
+            console.log("result", result);
+            if (!response.ok || result.errorCode !== 0 || !result.data) {
+                alert(result.message || '发起支付失败');
+                return;
+            }
+            const data = result.data;
+            if (data.paid) {
+                window.location.href = `./done/?token=${encodeURIComponent(data.doneToken || state.token)}`;
+                return;
+            }
+            if (!data.formHtml) {
+                alert(data.message || '未获取到支付宝支付表单');
+                return;
+            }
+            document.getElementById('payingModal').classList.remove('hidden');
+            submitAlipayForm(data.formHtml);
+        } catch (error) {
+            console.error('startAlipayPay error', error);
+            alert('发起支付失败，请稍后重试');
+        } finally {
+            payBtn.disabled = false;
+            payBtn.textContent = state.status === 3 ? '重新发起支付' : '支付宝支付';
+        }
+    }
+
+    function submitAlipayForm(formStr) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formStr;
+        const sourceForm = tempDiv.querySelector('form');
+        if (!sourceForm) {
+            alert('支付宝表单解析失败');
+            return;
+        }
+        const form = document.createElement('form');
+        form.action = sourceForm.action;
+        form.method = sourceForm.method || 'POST';
+        form.style.display = 'none';
+        sourceForm.querySelectorAll('input').forEach((input) => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = input.name;
+            hiddenInput.value = input.value;
+            form.appendChild(hiddenInput);
+        });
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+
+    document.getElementById('closeLoadingModal').addEventListener('click', () => {
+        toggleLoadingModal(false);
+    });
+
+    document.getElementById('payBtn').addEventListener('click', () => {
+        if (!state.token) {
+            alert('缺少支付凭证');
+            return;
+        }
+        startAlipayPay();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        state.token = getUrlParam('token') || '';
+        if (!state.token) {
+            toggleLoadingModal(true);
+            showErrorInModal('查询失败', '缺少支付凭证，请返回业务页面重新发起支付');
+            return;
+        }
+        fetchPayPageInfo();
+    });
+</script>
+</body>
+</html>

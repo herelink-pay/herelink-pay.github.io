@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付完成 - 安全支付中心</title>
+    <link rel="stylesheet" href="../static/css/all.min.css">
+    <link rel="stylesheet" href="../static/tailwindcss/styles.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        gray: {
+                            100: '#F7F8FA',
+                            200: '#E5E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-600 min-h-screen flex flex-col">
+<header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-center">
+        <h1 class="text-lg font-semibold text-gray-600">支付结果</h1>
+    </div>
+</header>
+
+<main class="flex-1 container mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-sm p-8 mb-6 text-center flex flex-col items-center justify-center" id="statusCard">
+        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6" id="statusIcon">
+            <i class="fa fa-spinner fa-spin text-primary text-4xl"></i>
+        </div>
+        <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-gray-600 mb-2" id="statusTitle">正在查询支付结果</h2>
+        <p class="text-gray-400 mb-8" id="statusDesc">请稍候...</p>
+        <div class="mb-8 hidden" id="amountSection">
+            <span class="text-gray-400 text-lg">支付金额</span>
+            <div class="text-[clamp(2rem,5vw,3rem)] font-bold text-danger mt-2" id="payAmount">¥0.00</div>
+        </div>
+        <button id="retryBtn" class="bg-gradient-to-r from-primary to-primary/80 text-white font-medium py-3 px-12 rounded-lg shadow-lg hover:shadow-xl transition-all hidden">重新查询</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 hidden" id="detailCard">
+        <div class="space-y-4 text-sm">
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">支付单号</span>
+                <span class="text-gray-600 font-medium" id="payId">-</span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">订单号</span>
+                <span class="text-gray-600 font-medium" id="orderId">-</span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">支付方式</span>
+                <span class="text-gray-600 flex items-center">
+                    <i class="fa-brands fa-alipay text-blue-500 mr-2"></i>
+                    支付宝支付
+                </span>
+            </div>
+            <div class="flex justify-between pb-3 border-b border-gray-100">
+                <span class="text-gray-400">币种</span>
+                <span class="text-gray-600" id="currency">-</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">支付时间</span>
+                <span class="text-gray-600" id="payTime">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-primary/5 rounded-xl border border-primary/20 p-4 mb-6 hidden" id="tipsCard">
+        <div class="flex items-start">
+            <i class="fa fa-info-circle text-primary mt-1 mr-3"></i>
+            <div class="text-sm text-gray-600" id="tipsContent">
+                <p>• 支付成功后请返回业务系统查看最新状态</p>
+                <p>• 如果页面停留在处理中，可稍后重新打开本页面查询</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const API_BASE = 'https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay';
+
+    function getUrlParam(key) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(key);
+    }
+
+    function formatAmount(amount) {
+        const value = Number(amount || 0);
+        return `¥${value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function updateStatusCard(type, data = {}) {
+        const iconEl = document.getElementById('statusIcon');
+        const titleEl = document.getElementById('statusTitle');
+        const descEl = document.getElementById('statusDesc');
+        const amountSection = document.getElementById('amountSection');
+        const retryBtn = document.getElementById('retryBtn');
+        const detailCard = document.getElementById('detailCard');
+        const tipsCard = document.getElementById('tipsCard');
+
+        iconEl.className = 'w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center';
+        retryBtn.classList.add('hidden');
+        amountSection.classList.add('hidden');
+        detailCard.classList.add('hidden');
+        tipsCard.classList.add('hidden');
+
+        if (type === 'success') {
+            iconEl.classList.add('bg-success/20', 'text-success');
+            iconEl.innerHTML = '<i class="fa fa-check-circle text-4xl"></i>';
+            titleEl.textContent = '支付成功';
+            descEl.textContent = '支付已完成，请返回业务系统查看最新结果';
+            descEl.className = 'text-gray-400 mb-8';
+            amountSection.classList.remove('hidden');
+            detailCard.classList.remove('hidden');
+            tipsCard.classList.remove('hidden');
+            document.getElementById('payAmount').textContent = formatAmount(data.amount || 0);
+            return;
+        }
+        if (type === 'processing') {
+            iconEl.classList.add('bg-warning/10', 'text-warning');
+            iconEl.innerHTML = '<i class="fa fa-clock-o text-4xl"></i>';
+            titleEl.textContent = '支付处理中';
+            descEl.textContent = data.message || '支付宝支付结果确认中，请稍后重新查询';
+            descEl.className = 'text-warning mb-8';
+            retryBtn.classList.remove('hidden');
+            detailCard.classList.remove('hidden');
+            return;
+        }
+        if (type === 'failed') {
+            iconEl.classList.add('bg-danger/10', 'text-danger');
+            iconEl.innerHTML = '<i class="fa fa-exclamation-circle text-4xl"></i>';
+            titleEl.textContent = '支付失败';
+            descEl.textContent = data.message || '支付未成功完成';
+            descEl.className = 'text-danger mb-8';
+            retryBtn.classList.remove('hidden');
+            detailCard.classList.remove('hidden');
+            return;
+        }
+        iconEl.classList.add('bg-gray-100');
+        iconEl.innerHTML = '<i class="fa fa-spinner fa-spin text-primary text-4xl"></i>';
+        titleEl.textContent = '正在查询支付结果';
+        descEl.textContent = '请稍候...';
+        descEl.className = 'text-gray-400 mb-8';
+    }
+
+    function renderDetail(data) {
+        document.getElementById('payId').textContent = data.payId || '-';
+        document.getElementById('orderId').textContent = data.orderId || '-';
+        document.getElementById('currency').textContent = data.currency || '-';
+        document.getElementById('payTime').textContent = data.payTime || '-';
+    }
+
+    async function fetchPayResult() {
+        updateStatusCard('loading');
+        const token = getUrlParam('token') || '';
+        if (!token) {
+            updateStatusCard('failed', { message: '缺少支付凭证，请返回业务页面重新发起支付' });
+            return;
+        }
+        try {
+            const response = await fetch(`${API_BASE}/payResult`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            const result = await response.json();
+            if (!response.ok || result.errorCode !== 0 || !result.data) {
+                updateStatusCard('failed', { message: result.message || `接口请求失败：${response.status}` });
+                return;
+            }
+            const data = result.data;
+            renderDetail(data);
+            if (data.status === 2) {
+                updateStatusCard('success', { amount: data.amount });
+            } else if (data.status === 1 || data.status === 0) {
+                updateStatusCard('processing', { message: data.message || data.statusDesc || '支付结果确认中' });
+            } else {
+                updateStatusCard('failed', { message: data.message || data.statusDesc || '支付未成功完成' });
+            }
+        } catch (error) {
+            console.error('fetchPayResult error', error);
+            updateStatusCard('failed', { message: '网络异常，无法连接到服务器，请稍后重试' });
+        }
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+        fetchPayResult();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchPayResult();
+    });
+</script>
+</body>
+</html>
