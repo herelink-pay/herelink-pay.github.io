@@ -1,0 +1,35 @@
+name: Deploy Static Branches to Subpaths
+
+on:
+  push:
+    branches:
+      - '**'         # '**' 代表匹配所有分支（包括带有斜杠的分支，如 feature/login）
+      - '!gh-pages'  # 排除 gh-pages
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 动态设置部署目录
+      - name: Set destination directory
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "DEST_DIR=." >> $GITHUB_ENV
+          else
+            echo "DEST_DIR=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/
+          destination_dir: ${{ env.DEST_DIR }}
+          keep_files: true
+          exclude_assets: '.github,README.md'

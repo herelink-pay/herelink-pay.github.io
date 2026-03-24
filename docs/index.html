@@ -265,7 +265,7 @@
 
         const payBtn = document.getElementById('payBtn');
         if (state.paySuccess || state.status === 2) {
-            window.location.href = `/done/?token=${state.doneToken}`;
+            window.location.href = `./done/?token=${state.doneToken}`;
             return;
         }
         payBtn.disabled = false;
@@ -314,7 +314,7 @@
             }
             const data = result.data;
             if (data.paid) {
-                window.location.href = `/done/?token=${encodeURIComponent(data.doneToken || state.token)}`;
+                window.location.href = `./done/?token=${encodeURIComponent(data.doneToken || state.token)}`;
                 return;
             }
             if (!data.formHtml) {
