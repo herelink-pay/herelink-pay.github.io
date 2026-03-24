@@ -134,6 +134,7 @@
 
 <script>
     const API_BASE = 'https://zd-iot.here.link/herelink-bill/api/lock/profit/web/pay';
+    const quitUrl = 'https://pay.here.link/';
     const state = {
         token: '',
         payId: null,
@@ -303,7 +304,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     token: state.token,
-                    quitUrl: 'https://pay.here.link/'
+                    quitUrl: quitUrl
                 })
             });
             const result = await response.json();
